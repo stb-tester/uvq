@@ -282,7 +282,7 @@ class DistortionNetInference:
         self.label_dim = label_dim
 
     def load_state_dict(self, model_path) -> nn.Module:
-        model = torch.load(model_path, weights_only=True)
+        model = torch.load(model_path, map_location='cpu')
         self.model.load_state_dict(model)
         return model
 

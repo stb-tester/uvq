@@ -104,7 +104,7 @@ class ContentNetInference:
         self.features_transpose = (0, 2, 3, 1)
 
     def load_state_dict(self, model_path) -> torch.nn.Module:
-        model = torch.load(model_path, weights_only=True)
+        model = torch.load(model_path, map_location='cpu')
         self.model.load_state_dict(model)
         return model
 
