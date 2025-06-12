@@ -60,24 +60,11 @@ class VideoReader:
         fd, temp_filename = tempfile.mkstemp()
         fd_small, temp_filename_small = tempfile.mkstemp()
         cmd = (
-            "ffmpeg  -i %s -filter_complex "
-            ' "[0:v]%sscale=w=%d:h=%d:flags=bicubic:force_original_aspect_ratio=1,'
-            'pad=%d:%d:(ow-iw)/2:(oh-ih)/2,format=rgb24,split=2[out1][tmp],[tmp]scale=%d:%d:flags=bilinear[out2]"'
-            " -map [out1] -r %d -f rawvideo -pix_fmt rgb24 -y %s"
-            " -map [out2] -r %d -f rawvideo -pix_fmt rgb24 -y %s"
-        ) % (
-            filepath,
-            transpose_param,
-            VIDEO_WIDTH,
-            VIDEO_HEIGHT,
-            VIDEO_WIDTH,
-            VIDEO_HEIGHT,
-            INPUT_WIDTH_CONTENT,
-            INPUT_HEIGHT_CONTENT,
-            VIDEO_FPS,
-            temp_filename,
-            VIDEO_FPS,
-            temp_filename_small,
+            f"ffmpeg  -i {filepath} -filter_complex "
+            f' "[0:v]{transpose_param}scale=w={VIDEO_WIDTH}:h={VIDEO_HEIGHT}:flags=bicubic:force_original_aspect_ratio=1,'
+            f'pad={VIDEO_WIDTH}:{VIDEO_HEIGHT}:(ow-iw)/2:(oh-ih)/2,format=rgb24,split=2[out1][tmp],[tmp]scale={INPUT_WIDTH_CONTENT}:{INPUT_HEIGHT_CONTENT}:flags=bilinear[out2]"'
+            f" -map [out1] -r {VIDEO_FPS} -f rawvideo -pix_fmt rgb24 -y {temp_filename}"
+            f" -map [out2] -r {VIDEO_FPS} -f rawvideo -pix_fmt rgb24 -y {temp_filename_small}"
         )
 
         try:
