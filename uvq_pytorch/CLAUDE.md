@@ -23,17 +23,17 @@ python inference.py Gaming_1080P-0ce6_orig.mp4 20 --output results.txt --transpo
 
 ### Neural Network Components
 
-- **CompressionNet** (`utils/compressionnet.py`): InceptionV1-based architecture analyzing compression artifacts
-  - Input: 320x180x5 patches (5fps)
-  - Model: `checkpoint/compressionnet_pytorch_statedict.pt`
-
-- **ContentNet** (`utils/contentnet.py`): EfficientNet-based architecture for content analysis  
-  - Input: 496x496x5 patches (5fps)
+- **ContentNet** (`utils/contentnet.py`): EfficientNet-based architecture for content analysis
+  - Input: Whole frame resized to 3x496x496 (RGB, only the first frame from each second).
   - Model: `checkpoint/contentnet_pytorch.pt`
   - Labels: `checkpoint/contentnet_labels.csv` (3862 content categories)
 
+- **CompressionNet** (`utils/compressionnet.py`): InceptionV1-based architecture analyzing compression artifacts
+  - Input: 5x3x320x180 patches (RGB @ 5fps)
+  - Model: `checkpoint/compressionnet_pytorch_statedict.pt`
+
 - **DistortionNet** (`utils/distortionnet.py`): Distortion type analysis
-  - Input: 640x360x1 patches (1fps)
+  - Input: 3x640x360 patches (RGB, only the first frame from each second)
   - Model: `checkpoint/distortionnet_pytorch_statedict.pt`
 
 - **AggregationNet** (`utils/aggregationnet.py`): Combines features from multiple networks
