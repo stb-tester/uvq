@@ -19,7 +19,6 @@ limitations under the License.
 from typing import Union
 import os
 import numpy as np
-import pandas as pd
 import torch
 
 from torch import nn
@@ -100,7 +99,7 @@ class ContentNetInference:
             self.load_state_dict(model_path)
         if eval_mode:
             self.model.eval()
-        self.label_mapping: pd.DataFrame = self.load_labels_df(LABELS_CSV_PATH)
+        self.label_mapping: dict = self.load_labels_df(LABELS_CSV_PATH)
         self.features_transpose = (0, 2, 3, 1)
 
     def load_state_dict(self, model_path) -> torch.nn.Module:
@@ -121,8 +120,15 @@ class ContentNetInference:
             label_probs.detach().numpy()[0],
         )
 
-    def load_labels_df(self, csv_path) -> pd.DataFrame:
-        return pd.read_csv(csv_path)
+    def load_labels_df(self, csv_path) -> dict:
+        """Load labels from CSV file into a dictionary mapping index to name."""
+        import csv
+        labels = {}
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                labels[int(row['Index'])] = row['Name']
+        return labels
 
     def label_probabilities_to_text(
         self, label_probs: Union[list, np.ndarray], top_n: int = 1
@@ -139,16 +145,23 @@ class ContentNetInference:
             probs (list): list of top_n predicted probabilities
             indices (list): list of top_n predicted indices
         """
+        if not isinstance(label_probs, np.ndarray):
+            label_probs = np.array(label_probs)
+            
         top_indices = label_probs.argsort()[: -top_n - 1 : -1]
-        probs = label_probs[top_indices]
-        predicted = self.label_mapping.merge(
-            pd.DataFrame({"prob": probs, "Index": top_indices}), on="Index"
-        ).sort_values("prob", ascending=False)
-        return (
-            predicted["Name"].tolist(),
-            predicted["prob"].tolist(),
-            predicted["Index"].tolist(),
-        )
+        top_probs = label_probs[top_indices]
+        
+        # Create lists with corresponding names, probabilities, and indices
+        predicted_names = []
+        predicted_probs = []
+        predicted_indices = []
+        
+        for idx, prob in zip(top_indices, top_probs):
+            predicted_names.append(self.label_mapping.get(idx, f"Unknown_{idx}"))
+            predicted_probs.append(float(prob))
+            predicted_indices.append(int(idx))
+        
+        return predicted_names, predicted_probs, predicted_indices
 
     def get_labels_and_features_for_all_frames(
         self, video: np.ndarray
