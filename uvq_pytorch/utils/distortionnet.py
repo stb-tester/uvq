@@ -316,13 +316,14 @@ class DistortionNetInference:
         Note that even thought the input video can have any fps, computation is performed only on the first frame of each second.
         """
         # TODO: allow converting video to a batch of patches and running batch prediction instead of sliding window for loops
+        num_seconds = video.shape[0]
         label = np.ndarray(
-            (video.shape[0], self.num_patches_y, self.num_patches_x, self.label_dim),
+            (num_seconds, self.num_patches_y, self.num_patches_x, self.label_dim),
             np.float32,
         )
         feature = np.ndarray(
             (
-                video.shape[0],
+                num_seconds,
                 self.feature_height,
                 self.feature_width,
                 self.feature_channels,
@@ -335,7 +336,7 @@ class DistortionNetInference:
             np.float32,
         )
 
-        for k in range(video.shape[0]):
+        for k in range(num_seconds):
             for j in range(self.num_patches_y):
                 for i in range(self.num_patches_x):
                     patch[0, :] = video[

@@ -165,10 +165,11 @@ class ContentNetInference:
 
         Note that even thought the input video can have any fps, computation is performed only on the first frame of each second.
         """
-        label = np.ndarray((video.shape[0], DIM_LABEL_CONTENT), np.float32)
+        num_seconds = video.shape[0]
+        label = np.ndarray((num_seconds, DIM_LABEL_CONTENT), np.float32)
         feature = np.ndarray(
             (
-                video.shape[0],
+                num_seconds,
                 DIM_HEIGHT_FEATURE,
                 DIM_WIDTH_FEATURE,
                 DIM_CHANNEL_FEATURE,
@@ -176,7 +177,7 @@ class ContentNetInference:
             np.float32,
         )
 
-        for k in range(video.shape[0]):
+        for k in range(num_seconds):
             frame_features, frame_labels = self.predict_and_get_features(
                 video[k, 0, :, :, :]
             )
